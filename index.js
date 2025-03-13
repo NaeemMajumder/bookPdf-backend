@@ -29,12 +29,13 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
     console.log("Connected to MongoDB!");
 
     let UserData = client.db("BoiPrint").collection("UserData");
     let BannerData = client.db("BoiPrint").collection("BannerData");
     let OrderData = client.db("BoiPrint").collection("OrderData");
+    let BookPrintData = client.db("BoiPrint").collection("BookPrintData");
 
     app.get('/users', async(req,res)=>{
       const query = req.query;
@@ -168,9 +169,24 @@ async function run() {
       res.send(result);
     })
 
+    // book print demo data....
+    app.get('/bookPrint', async(req,res)=>{
+      const result = await BookPrintData.find().toArray();
+      res.send(result);
+    });
+
+    app.put('/bookPrint', async(req, res)=>{
+      const {coverType, printType} = req.body.updatedItem;
+      const value = req.body.updatedItem.value;
+      const result = await BookPrintData.updateOne({value},{$set: {coverType, printType}})
+      res.send(result);
+    })
+
+    
+
     // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
 
     app.get("/", (req, res) => {
