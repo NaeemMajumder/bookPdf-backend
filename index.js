@@ -182,6 +182,33 @@ async function run() {
       res.send(result);
     })
 
+
+    // order details
+    app.post('/orderDetails', async(req,res)=>{
+      const data = req.body;
+      const date = new Date();
+      const formattedDate = date.toLocaleDateString('en-GB').replace(/\//g, '-');
+
+      const {address} = await UserData.findOne({email: data.email});
+
+      const orderDetails = {
+        customerEmail: data.email,
+        location: address,
+        orderID: "ORD-"+uuidv4().slice(0, 8),
+        date: formattedDate,
+        amount: data.totalPrice,
+        status: "Pending",
+        pdf: "url",
+        coverType: data.coverType,
+        paperType: data.paperType,
+        selectedSize: data.selectedSize,
+        quantity: data.quantity
+      }
+
+      const result = await OrderData.insertOne(orderDetails);
+      res.send(result);
+    })
+
     
 
     // Send a ping to confirm a successful connection
