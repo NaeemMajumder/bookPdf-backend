@@ -308,19 +308,19 @@ async function run() {
       res.send(allArea);
     });
 
-    app.get("/stores", async(req,res)=>{
-      // store id
-      const response_store_id = await axios.get(
-        `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/stores`, // Fetch stores list
-        {
-          headers: {
-            "Content-Type": "application/json; charset=UTF-8",
-            Authorization: `Bearer ${access_token}`, // Add Token to Header
-          },
-        });
+    // app.get("/stores", async(req,res)=>{
+    //   // store id
+    //   const response_store_id = await axios.get(
+    //     `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/stores`, // Fetch stores list
+    //     {
+    //       headers: {
+    //         "Content-Type": "application/json; charset=UTF-8",
+    //         Authorization: `Bearer ${access_token}`, // Add Token to Header
+    //       },
+    //     });
 
-        res.send(response_store_id.data);
-    });
+    //     res.send(response_store_id.data);
+    // });
 
     app.get("/pathaoFinalOrder", async(req,res)=>{
 
@@ -406,11 +406,6 @@ async function run() {
           },
         }
       );
-
-
-
-
-  
 
       res.send({"response_orderData":response_orderData.data,
         "response_order": response_order.data
