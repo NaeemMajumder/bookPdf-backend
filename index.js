@@ -229,9 +229,6 @@ async function run() {
 
 
     let access_token = "";
-    // let current_city = "";
-    // let current_zone = "";
-    // let current_area = "";
 
     app.get('/accessToken', async(req,res)=>{
       const response = await axios.post(
@@ -255,7 +252,6 @@ async function run() {
       res.json(response.data);
     })
 
-
     app.get("/cityList", async(req,res)=>{
       const response_city = await axios.get(
         `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/city-list`,
@@ -269,13 +265,15 @@ async function run() {
 
       const cityList = response_city.data.data.data;
       res.send(cityList);
-    })
+    });
 
     app.get("/zoneList", async(req,res)=>{
-      const city_info =   {
+      const city_info = {
         "city_id": 1,
         "city_name": "Dhaka"
       };
+
+      // const city_info = req.body;
 
       const response_zone = await axios.get(
         `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/cities/${city_info.city_id}/zone-list`,
@@ -290,7 +288,6 @@ async function run() {
 
       res.send(zoneList);
     });
-
 
     app.get("/areaList", async(req,res)=>{
       const zone_info =   {
@@ -309,6 +306,20 @@ async function run() {
       );
       const allArea = response_area.data.data.data;
       res.send(allArea);
+    });
+
+    app.get("/stores", async(req,res)=>{
+      // store id
+      const response_store_id = await axios.get(
+        `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/stores`, // Fetch stores list
+        {
+          headers: {
+            "Content-Type": "application/json; charset=UTF-8",
+            Authorization: `Bearer ${access_token}`, // Add Token to Header
+          },
+        });
+
+        res.send(response_store_id.data);
     });
 
     app.get("/pathaoFinalOrder", async(req,res)=>{
@@ -330,39 +341,8 @@ async function run() {
       };
 
 
-      const orderData = {
-        store_id: 148381, // Must be valid
-        merchant_order_id: `ORD-ec348c88`, // Must be unique for each request
-        recipient_name: "Naeem",
-        recipient_phone: "01688399463",
-        recipient_address: "Uttara , Sector -24, Dhaka",
-        recipient_city: city_info.city_id, // Ensure this is valid
-        recipient_zone: zone_info.zone_id, // Ensure this is valid
-        recipient_area: area_info.area_id, // Ensure this is valid
-        delivery_type: 48,
-        item_type: 2, // Parcel
-        special_instruction: "Handle with care.",
-        item_quantity: 1,
-        item_weight: 5, // Try using grams if 5kg is invalid
-        item_description: "5 printed books",
-        amount_to_collect: 1000, // Remove if not using COD
-      };
 
-      const response_orderData = await axios.post(
-        `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/orders`,
-        orderData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
-      );
-
-
-
-
-      // price 
+      // price .....................
       const orderDetails = {
         store_id: 148381,
         item_type: 2,
@@ -395,151 +375,186 @@ async function run() {
 
       console.log(totalPayable);
 
+// .........................................................
+
+
+      const orderData = {
+        store_id: 148381, // Must be valid
+        merchant_order_id: "ORD-"+uuidv4().slice(0, 8), // Must be unique for each request
+        recipient_name: "Naeem",
+        recipient_phone: "01688399463",
+        recipient_address: "Uttara , Sector -24, Dhaka",
+        recipient_city: city_info.city_id, // Ensure this is valid
+        recipient_zone: zone_info.zone_id, // Ensure this is valid
+        recipient_area: area_info.area_id, // Ensure this is valid
+        delivery_type: 48,
+        item_type: 2, // Parcel
+        special_instruction: "Handle with care.",
+        item_quantity: 1,
+        item_weight: 5, // Try using grams if 5kg is invalid
+        item_description: "5 printed books",
+        amount_to_collect: totalPayable, // Remove if not using COD
+      };
+
+      const response_orderData = await axios.post(
+        `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/orders`,
+        orderData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+
+
+
+
+  
+
       res.send({"response_orderData":response_orderData.data,
         "response_order": response_order.data
       });
     })
 
 
-    // pathao access token api
-    app.get("/accessToken", async (req, res) => {
-      try {
-        // const response = await axios.post(
-        //   `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/issue-token`,
-        //   {
-        //     client_id: process.env.PATHAO_CLIENT_ID,
-        //     client_secret: process.env.PATHAO_CLIENT_SECRET,
-        //     grant_type: process.env.PATHAO_GRANT_TYPE,
-        //     username: process.env.PATHAO_USERNAME,
-        //     password: process.env.PATHAO_PASSWORD,
-        //   },
-        //   {
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //   }
-        // );
-        // // console.log(response.data);
-        // const access_token = response.data.access_token;
-        // // console.log(access_token)
+    // // pathao access token api
+    // app.get("/accessToken", async (req, res) => {
+    //   try {
+    //     // const response = await axios.post(
+    //     //   `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/issue-token`,
+    //     //   {
+    //     //     client_id: process.env.PATHAO_CLIENT_ID,
+    //     //     client_secret: process.env.PATHAO_CLIENT_SECRET,
+    //     //     grant_type: process.env.PATHAO_GRANT_TYPE,
+    //     //     username: process.env.PATHAO_USERNAME,
+    //     //     password: process.env.PATHAO_PASSWORD,
+    //     //   },
+    //     //   {
+    //     //     headers: {
+    //     //       "Content-Type": "application/json",
+    //     //     },
+    //     //   }
+    //     // );
+    //     // // console.log(response.data);
+    //     // const access_token = response.data.access_token;
+    //     // // console.log(access_token)
     
-        // // res.json(response.data);
+    //     // // res.json(response.data);
 
-        const current_city = "Dhaka";
-        const current_zone = "Uttara Sector 13";
-        const current_area = "Sector 13 Road 15";
+    //     const current_city = "Dhaka";
+    //     const current_zone = "Uttara Sector 13";
+    //     const current_area = "Sector 13 Road 15";
 
-        const response_city = await axios.get(
-          `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/city-list`,
-          {
-            headers: {
-              "Content-Type": "application/json; charset=UTF-8",
-              Authorization: `Bearer ${response.data.access_token}`,
-            },
-          }
-        );
-        // res.send(response_city.data);
+    //     const response_city = await axios.get(
+    //       `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/city-list`,
+    //       {
+    //         headers: {
+    //           "Content-Type": "application/json; charset=UTF-8",
+    //           Authorization: `Bearer ${response.data.access_token}`,
+    //         },
+    //       }
+    //     );
+    //     // res.send(response_city.data);
     
-        // console.log("City List:", response_city.data.data);
+    //     // console.log("City List:", response_city.data.data);
 
-        const allCities = response_city.data.data.data;
+    //     const allCities = response_city.data.data.data;
 
-        const city_info = allCities.find(city=>city.city_name.toLowerCase() === current_city.toLowerCase());
-        // console.log(city_info.city_id);
+    //     const city_info = allCities.find(city=>city.city_name.toLowerCase() === current_city.toLowerCase());
+    //     // console.log(city_info.city_id);
 
-        // allCities.map(city=>console.log(city.city_name.toLowerCase()));
-
-
+    //     // allCities.map(city=>console.log(city.city_name.toLowerCase()));
 
 
 
-        // response zone
-        const response_zone = await axios.get(
-          `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/cities/${city_info.city_id}/zone-list`,
-          {
-            headers: {
-              "Content-Type": "application/json; charset=UTF-8",
-              Authorization: `Bearer ${response.data.access_token}`,
-            },
-          }
-        );
-        const allZone = response_zone.data.data.data;
-        const zone_info = allZone.find(zone=>zone.zone_name.toLowerCase() === current_zone.toLowerCase());
-        // console.log(zone_info);
-          // res.send(response_zone.data);
+
+
+    //     // response zone
+    //     const response_zone = await axios.get(
+    //       `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/cities/${city_info.city_id}/zone-list`,
+    //       {
+    //         headers: {
+    //           "Content-Type": "application/json; charset=UTF-8",
+    //           Authorization: `Bearer ${response.data.access_token}`,
+    //         },
+    //       }
+    //     );
+    //     const allZone = response_zone.data.data.data;
+    //     const zone_info = allZone.find(zone=>zone.zone_name.toLowerCase() === current_zone.toLowerCase());
+    //     // console.log(zone_info);
+    //       // res.send(response_zone.data);
 
         
         
-        // response area
-        const response_area = await axios.get(
-          `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/zones/${zone_info.zone_id}/area-list`,
-          {
-            headers: {
-              "Content-Type": "application/json; charset=UTF-8",
-              Authorization: `Bearer ${response.data.access_token}`,
-            },
-          }
-        );
-        const allArea = response_area.data.data.data;
-        const area_info = allArea.find(area=>area.area_name.toLowerCase() === current_area.toLowerCase());
-        console.log(area_info);
+    //     // response area
+    //     const response_area = await axios.get(
+    //       `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/zones/${zone_info.zone_id}/area-list`,
+    //       {
+    //         headers: {
+    //           "Content-Type": "application/json; charset=UTF-8",
+    //           Authorization: `Bearer ${response.data.access_token}`,
+    //         },
+    //       }
+    //     );
+    //     const allArea = response_area.data.data.data;
+    //     const area_info = allArea.find(area=>area.area_name.toLowerCase() === current_area.toLowerCase());
+    //     console.log(area_info);
 
-        // res.send(response_area.data);
-
-
-
-
-        // // store id
-        // const response_store_id = await axios.get(
-        //   `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/stores`, // Fetch stores list
-        //   {
-        //     headers: {
-        //       "Content-Type": "application/json; charset=UTF-8",
-        //       Authorization: `Bearer ${access_token}`, // Add Token to Header
-        //     },
-        //   });
-
-        //   res.send(response_store_id.data);
+    //     // res.send(response_area.data);
 
 
 
 
+    //     // // store id
+    //     // const response_store_id = await axios.get(
+    //     //   `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/stores`, // Fetch stores list
+    //     //   {
+    //     //     headers: {
+    //     //       "Content-Type": "application/json; charset=UTF-8",
+    //     //       Authorization: `Bearer ${access_token}`, // Add Token to Header
+    //     //     },
+    //     //   });
 
-        // new order data
-        const orderData = {
-          store_id: 148381, // Must be valid
-          merchant_order_id: `ORD-ec348c88`, // Must be unique for each request
-          recipient_name: "Naeem",
-          recipient_phone: "01688399463",
-          recipient_address: "Uttara , Sector -24, Dhaka",
-          recipient_city: city_info.city_id, // Ensure this is valid
-          recipient_zone: zone_info.zone_id, // Ensure this is valid
-          recipient_area: area_info.area_id, // Ensure this is valid
-          delivery_type: 48,
-          item_type: 2, // Parcel
-          special_instruction: "Handle with care.",
-          item_quantity: 1,
-          item_weight: 2, // Try using grams if 5kg is invalid
-          item_description: "5 printed books",
-          amount_to_collect: 1000, // Remove if not using COD
-        };
-
-        console.log(orderData)
-
-        const response_orderData = await axios.post(
-          `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/orders`,
-          orderData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${access_token}`,
-            },
-          }
-        );
-
-        res.send(response_orderData.data);
+    //     //   res.send(response_store_id.data);
 
 
+
+
+
+    //     // new order data
+    //     const orderData = {
+    //       store_id: 148381, // Must be valid
+    //       merchant_order_id: `ORD-ec348c88`, // Must be unique for each request
+    //       recipient_name: "Naeem",
+    //       recipient_phone: "01688399463",
+    //       recipient_address: "Uttara , Sector -24, Dhaka",
+    //       recipient_city: city_info.city_id, // Ensure this is valid
+    //       recipient_zone: zone_info.zone_id, // Ensure this is valid
+    //       recipient_area: area_info.area_id, // Ensure this is valid
+    //       delivery_type: 48,
+    //       item_type: 2, // Parcel
+    //       special_instruction: "Handle with care.",
+    //       item_quantity: 1,
+    //       item_weight: 2, // Try using grams if 5kg is invalid
+    //       item_description: "5 printed books",
+    //       amount_to_collect: 1000, // Remove if not using COD
+    //     };
+
+    //     console.log(orderData)
+
+    //     const response_orderData = await axios.post(
+    //       `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/orders`,
+    //       orderData,
+    //       {
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           Authorization: `Bearer ${access_token}`,
+    //         },
+    //       }
+    //     );
+
+    //     res.send(response_orderData.data);
 
 
 
@@ -547,46 +562,48 @@ async function run() {
 
 
 
-        // price 
-        const orderDetails = {
-          store_id: 148381,
-          item_type: 2,
-          delivery_type: 48,
-          item_weight: 5,
-          recipient_city: city_info.city_id,
-          recipient_zone: zone_info.zone_id
-        }
 
 
-        const response_order = await axios.post(
-          `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/merchant/price-plan`, orderDetails,
-          {
-            headers: {
-              'Content-Type': 'application/json; charset=UTF-8',
-              'Authorization': `Bearer ${access_token}`
-            }
-          }
-        );
+    //     // price 
+    //     const orderDetails = {
+    //       store_id: 148381,
+    //       item_type: 2,
+    //       delivery_type: 48,
+    //       item_weight: 5,
+    //       recipient_city: city_info.city_id,
+    //       recipient_zone: zone_info.zone_id
+    //     }
+
+
+    //     const response_order = await axios.post(
+    //       `${process.env.PATHAO_BASE_URL}/aladdin/api/v1/merchant/price-plan`, orderDetails,
+    //       {
+    //         headers: {
+    //           'Content-Type': 'application/json; charset=UTF-8',
+    //           'Authorization': `Bearer ${access_token}`
+    //         }
+    //       }
+    //     );
     
-        console.log(response_order.data.data);
-        console.log(response_order.data.data.final_price);
-        res.json(response_order.data);
+    //     console.log(response_order.data.data);
+    //     console.log(response_order.data.data.final_price);
+    //     res.json(response_order.data);
 
 
-        // Order Details
-        const bookPrice = 1000; // Book printing price customer
-        const deliveryCharge = response_order.data.data.price; // Pathao's delivery charge
-        const codCharge = (bookPrice * response_order.data.data.cod_percentage) / 100; // COD handling charge
-        const totalPayable = bookPrice + deliveryCharge + codCharge; // Total amount customer pays
+    //     // Order Details
+    //     const bookPrice = 1000; // Book printing price customer
+    //     const deliveryCharge = response_order.data.data.price; // Pathao's delivery charge
+    //     const codCharge = (bookPrice * response_order.data.data.cod_percentage) / 100; // COD handling charge
+    //     const totalPayable = bookPrice + deliveryCharge + codCharge; // Total amount customer pays
 
-        console.log(totalPayable);
+    //     console.log(totalPayable);
 
 
-      } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: error.message});
-      }
-    });
+    //   } catch (error) {
+    //     console.error(error.message);
+    //     res.status(500).json({ error: error.message});
+    //   }
+    // });
 
 
 
